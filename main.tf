@@ -27,6 +27,11 @@ data "aws_security_group" "existing_redis_sg" {
     name   = "group-name"
     values = ["redis-security-group"]
   }
+
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
 }
 
 resource "aws_security_group" "redis_sg" {
@@ -63,9 +68,7 @@ resource "aws_elasticache_cluster" "redis" {
   parameter_group_name = "default.redis7"
   port                 = 6379
   subnet_group_name    = aws_elasticache_subnet_group.redis_subnet_group.name
-  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ?
-    [data.aws_security_group.existing_redis_sg.id] :
-    [aws_security_group.redis_sg.id]
+  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [aws_security_group.redis_sg.id]
 
   tags = {
     Name = "redis-cluster"
