@@ -66,6 +66,7 @@ resource "aws_elasticache_cluster" "redis" {
   security_group_ids   = coalesce(
     [data.aws_security_group.existing_redis_sg.id],
     [aws_security_group.redis_sg[0].id]
+  )
 
   tags = {
     Name = "redis-cluster"
