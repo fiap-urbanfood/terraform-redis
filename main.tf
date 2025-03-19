@@ -13,7 +13,13 @@ provider "aws" {
   region = var.aws_region
 }
 
+data "aws_elasticache_subnet_group" "existing_redis_subnet_group" {
+  name = "redis-subnet-group"
+}
+
 resource "aws_elasticache_subnet_group" "redis_subnet_group" {
+  count = length(data.aws_elasticache_subnet_group.existing_redis_subnet_group.id) > 0 ? 0 : 1
+  
   name       = "redis-subnet-group"
   subnet_ids = var.subnet_ids
 
@@ -67,7 +73,7 @@ resource "aws_elasticache_cluster" "redis" {
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
   port                 = 6379
-  subnet_group_name    = aws_elasticache_subnet_group.redis_subnet_group.name
+  subnet_group_name    = length(data.aws_elasticache_subnet_group.existing_redis_subnet_group.name) > 0 ? data.aws_elasticache_subnet_group.existing_redis_subnet_group.name : aws_elasticache_subnet_group.redis_subnet_group[0].name
   security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [aws_security_group.redis_sg[0].id]
 
   tags = {
