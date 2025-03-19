@@ -18,3 +18,8 @@ variable "node_type" {
   description = "Instance type for Redis nodes"
   default     = "cache.t2.micro"
 }
+
+variable "vpc_id" {
+  description = "ID da VPC onde o Security Group será criado"
+  default        = "vpc-471cf83a"
+}
