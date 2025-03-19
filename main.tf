@@ -36,7 +36,7 @@ data "aws_security_group" "existing_redis_sg" {
 
 resource "aws_security_group" "redis_sg" {
   count = length(data.aws_security_group.existing_redis_sg.id) > 0 ? 0 : 1
-  
+
   name        = "redis-security-group"
   description = "Allow Redis access"
   vpc_id      = var.vpc_id
@@ -68,7 +68,7 @@ resource "aws_elasticache_cluster" "redis" {
   parameter_group_name = "default.redis7"
   port                 = 6379
   subnet_group_name    = aws_elasticache_subnet_group.redis_subnet_group.name
-  security_group_ids = aws_security_group.redis_sg.count > 0 ? [data.aws_security_group.existing_redis_sg.id] : [aws_security_group.redis_sg.id]
+  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [aws_security_group.redis_sg[0].id]
 
   tags = {
     Name = "redis-cluster"
