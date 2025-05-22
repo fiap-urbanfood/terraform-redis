@@ -1,0 +1,100 @@
+name: Terraform AWS Deployment Redis - FIAP
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform Action to Perform'
+        type: choice
+        options:
+        - Terraform_apply
+        - Terraform_destroy
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+  terraform_apply:
+    name: "Terraform Apply"
+    if: ${{ github.event.inputs.action == 'Terraform_apply' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Checkout do código
+      - uses: AutoModality/action-clean@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Passo 2: Configurar credenciais da AWS        
+      - name: Config AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          audience: sts.amazonaws.com
+          role-to-assume: arn:aws:iam::857378965163:role/github-actions
+
+      # Passo 3: Configurar o Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.8
+
+      # Passo 4: Inicializar o Terraform
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      # Passo 5: Validar o código Terraform
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      # Passo 6: Criar o plano Terraform
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan
+
+      # Passo 7: Aplicar o plano Terraform
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve tfplan
+
+  terraform_destroy:
+    name: "Terraform_destroy"
+    if: ${{ github.event.inputs.action == 'Terraform_destroy' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Checkout do código
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Passo 2: Configurar credenciais da AWS
+      - name: Config AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          audience: sts.amazonaws.com
+          role-to-assume: arn:aws:iam::857378965163:role/github-actions        
+
+      # Passo 3: Configurar o Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.8
+
+      # Passo 4: Inicializar o Terraform
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      # Passo 5: Informa quais recursos serão removidos
+      - name: Show Destroy plan
+        run: terraform plan -destroy
+        continue-on-error: true
+
+      # Passo 6: Executa o Terraform Destroy
+      - name: Terraform Destroy
+        id: destroy
+        run: terraform destroy -auto-approve
