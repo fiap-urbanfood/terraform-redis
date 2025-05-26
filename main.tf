@@ -74,7 +74,7 @@ resource "aws_elasticache_cluster" "redis" {
   parameter_group_name = "default.redis7"
   port                 = 6379
   subnet_group_name    = length(data.aws_elasticache_subnet_group.existing_redis_subnet_group.name) > 0 ? data.aws_elasticache_subnet_group.existing_redis_subnet_group.name : aws_elasticache_subnet_group.redis_subnet_group[0].name
-  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [aws_security_group.redis_sg[0].id]
+  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [element(aws_security_group.redis_sg.*.id, 0)]
 
   tags = {
     Name = "redis-cluster"
