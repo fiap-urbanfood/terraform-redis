@@ -20,6 +20,6 @@ variable "node_type" {
 }
 
 variable "vpc_id" {
-  description = "ID da VPC onde o Security Group será criado"
+  description = "Id da VPC onde o Security Group será criado"
   default        = "vpc-471cf83a"
 }
