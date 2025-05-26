@@ -28,20 +28,9 @@ resource "aws_elasticache_subnet_group" "redis_subnet_group" {
   }
 }
 
-data "aws_security_group" "existing_redis_sg" {
-  filter {
-    name   = "group-name"
-    values = ["redis-security-group"]
-  }
 
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
-  }
-}
 
 resource "aws_security_group" "redis_sg" {
-  count = length(data.aws_security_group.existing_redis_sg.id) > 0 ? 0 : 1
 
   name        = "redis-security-group"
   description = "Allow Redis access"
@@ -63,6 +52,18 @@ resource "aws_security_group" "redis_sg" {
 
   tags = {
     Name = "redis-security-group"
+  }
+}
+
+data "aws_security_group" "existing_redis_sg" {
+  filter {
+    name   = "group-name"
+    values = ["redis-security-group"]
+  }
+
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
   }
 }
 
