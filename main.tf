@@ -1,4 +1,16 @@
+provider "aws" {
+  #profile = "terraform-iac"
+  region = var.aws_region
+}
+
 terraform {
+  backend "s3" {
+    #profile = "terraform-iac"
+    bucket  = "iac-urbanfood-tfstates"
+    key     = "rds-redis/terraform.tfstate"
+    region  = "us-east-1"
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -7,10 +19,6 @@ terraform {
   }
 
   required_version = ">= 1.2.0"
-}
-
-provider "aws" {
-  region = var.aws_region
 }
 
 data "aws_elasticache_subnet_group" "existing_redis_subnet_group" {
@@ -74,7 +82,7 @@ resource "aws_elasticache_cluster" "redis" {
   parameter_group_name = "default.redis7"
   port                 = 6379
   subnet_group_name    = length(data.aws_elasticache_subnet_group.existing_redis_subnet_group.name) > 0 ? data.aws_elasticache_subnet_group.existing_redis_subnet_group.name : aws_elasticache_subnet_group.redis_subnet_group[0].name
-  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [element(aws_security_group.redis_sg.*.id, 0)]
+  security_group_ids = length(data.aws_security_group.existing_redis_sg.id) > 0 ? [data.aws_security_group.existing_redis_sg.id] : [aws_security_group.redis_sg[0].id]
 
   tags = {
     Name = "redis-cluster"
